@@ -225,7 +225,6 @@ parser = argparse.ArgumentParser(prog='QuickMacro',
 # Global arguments: save file (-s [str]) and delay (-d [float])
 parser.add_argument(
     "-s", "--save-file",
-    required=True,
     type = str,
     default = "Recoding_1",
     help="File name of the recording WITHOUT file extention (default: Recording_1)."
