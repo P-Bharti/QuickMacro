@@ -158,7 +158,7 @@ def playback_macro():
         first_coordinates = (None,None) # if relative is chosen and mouse isnt moved; no need to do first_t as if no events then the for loop doesnt run
         print("\nNotice: You've either not entered any input or havent moved the mouse in the recording.")
 
-    escape_detector = threading.Thread(target = detect_escape, daemon = True) # eaerly exit detector
+    escape_detector = threading.Thread(target = detect_escape, daemon = True) # early exit detector
     escape_detector.start()
     escape_found = threading.Event()
     for source, t, event, (pos_x,pos_y) in combined_events:
