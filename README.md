@@ -31,7 +31,7 @@ pip install keyboard mouse
 ```
 ## Usage
 QuickMacro provides a command-line interface (CLI) to record and playback actions.
-It is reccomended to save the command such that it runs via a hotkey of your design in your system settings
+It is recommended to save the command such that it runs via a hotkey of your design in your system settings. (so a hotkey to record and a hotkey to play)
 
 ## Global Arguments
 | Argument | Type | Default | Description |
