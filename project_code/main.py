@@ -120,7 +120,7 @@ try: # combined_events in format (source, time, event, coordinates)
 except IndexError:
     print("\nNo events detected!")
 
-escape_detector = threading.Thread(target = detect_escape) # exit detector
+escape_detector = threading.Thread(target = detect_escape, daemon = True) # exit detector
 escape_detector.start()
 escape_found = threading.Event()
 
@@ -149,6 +149,5 @@ for source, t, event, (pos_x,pos_y) in combined_events:
             else: # scrolling doesnt work on ubuntu 24 - idk why
                 mouse.play([event])
 
-escape_detector.join()
 print("\nPlayback finished.")
 
