@@ -14,7 +14,7 @@ mouse_events = []
 combined_events = []
 
 replay_speed = 1 # TODO get into menu
-move_relative = True # TODO get into menu
+move_relative = False # TODO get into menu
 
 #  ----| MACRO FUCTIONS START |----
 
@@ -109,16 +109,54 @@ def combine_mouse_keyboard_records():
     combined_events.sort(key=lambda x: x[1])
 
     # pretty printing TODO replace with JSON and save
+    print(combined_events) # DEBUG
     print("\n--- Combined Timeline ("+ str(len(combined_events)) + " events) ---")
     for source, timestamp, event, (pos_x,pos_y) in combined_events:
         print(str(round(timestamp,4)), source, event, str(pos_x) + "," + str(pos_y), sep = " | ")
+
+# - MAJOR FUNCTION (pt. 1 of 2) - Saves the list 'combined_events' to a txt file
+def save_recording_to_file(file_name):
+    file_writer = open(file_name + ".txt", "w")
+    formatted_lines = []
+
+    for source, timestamp, event, (pos_x,pos_y) in combined_events: # appends in format timestamp | source | event | pos_x,pos_y \n
+        formatted_lines.append(" | ".join([str(round(timestamp,4)), source, str(event), str(pos_x) + "," + str(pos_y)]) + '\n')
+
+    file_writer.writelines(formatted_lines)
+
+    file_writer.close()
+
+# - MAJOR FUNCTION (pt. 2 of 2) - Retrieves data from the txt file and sends to the list 'combined_events' TODO make this work
+def retrieve_recording_from_file(file_name):
+    global combined_events
+
+    file_opener = open(file_name + ".txt", "r")
+    retrieved_lines = file_opener.readlines()
+    file_opener.close()
+
+    deformatted_lines = []
+
+    for i in retrieved_lines:
+        i = i[:-1] # to remove the /n charector at the end of each line
+
+        append_value = i.split(" | ")
+        temp = append_value[1] # swapping timestamp and source again
+        append_value[1] = append_value[0]
+        append_value[0] = temp
+
+        append_value[3] = tuple(append_value[3].split(',')) # splits the cordinates into (pos_x,pos_y)
+        append_value = tuple(append_value)
+
+        deformatted_lines.append(append_value)
+
+    combined_events = deformatted_lines
 
 # - minor function -
 def detect_escape():
     keyboard.wait("esc") # will not progress till esc is hit
     escape_found.set()
 
-# - MAJOR FUNCTION - Uses the minor function above to detect early quit; Plays back the macro using the list 'combined_events'
+# - MAJOR FUNCTION - Uses the one minor function above to detect early quit; Plays back the macro using the list 'combined_events'
 def playback_macro():
     global escape_found
 
@@ -185,5 +223,6 @@ def playback_macro():
 
 begin_recording()
 combine_mouse_keyboard_records()
+save_recording_to_file("Recording_1")
+# retrieve_recording_from_file("Recording_1")
 playback_macro()
-
