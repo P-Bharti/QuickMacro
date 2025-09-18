@@ -60,7 +60,7 @@ python main.py -s Recording_1 -d 3 record -mr
 Replay a saved recording:
 
 ```
-python quickmacro.py playback -s my_recording
+python main.py playback -s my_recording
 ```
 
 Options:
@@ -71,7 +71,7 @@ Options:
 
 Example:
 ```
-python quickmacro.py -s Recording_1 playback -rs 2
+python main.py -s Recording_1 playback -rs 2
 ```
 > Plays the recording at double speed.
 
