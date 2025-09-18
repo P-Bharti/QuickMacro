@@ -3,6 +3,8 @@ import mouse
 import threading
 import time
 import pickle
+import argparse
+import sys
 '''
     To fix a issue in the library "mouse" set the _nixcommon.py code as the following if the mouse clicks, etc don't work (lines 31-33)
     UI_SET_KEYBIT = 0x40045565
@@ -15,8 +17,8 @@ mouse_events = []
 combined_events = []
 
 end_recording_hotkey = "esc" # for custom bindings, either use the scan code of the key (56 for space for eg.) or in the format: ' ' or in the format 'space'
-replay_speed = 1 # TODO get into menu
-move_relative = False # TODO get into menu
+replay_speed = 1 # subject to change by parser in MACRO CLI PARSER section
+move_relative = False # subject to change by parser in MACRO CLI PARSER section
 
 #  ----| MACRO FUCTIONS START |----
 
@@ -111,7 +113,6 @@ def combine_mouse_keyboard_records():
     combined_events.sort(key=lambda x: x[1])
 
     # pretty printing the recording
-    print(combined_events) # DEBUG
     print("\n--- Combined Timeline ("+ str(len(combined_events)) + " events) ---")
     for source, timestamp, event, (pos_x,pos_y) in combined_events:
         print(str(round(timestamp,4)), source, event, str(pos_x) + "," + str(pos_y), sep = " | ")
@@ -150,15 +151,12 @@ def detect_escape():
 def playback_macro():
     global escape_found
 
-    print("\nReplaying in 3 seconds... Press ESC to quit at any time!") # TODO make instant later
-    time.sleep(3)
-
     try: # combined_events in format (source, time, event, coordinates)
         first_t = combined_events[0][1] # orignially, first timestamp is the prev t
         first_coordinates = mouse_events[0][1] # mouse_events in the format of a tuple (event,(x_pos,y_pos))
     except IndexError:
         first_coordinates = (None,None) # if relative is chosen and mouse isnt moved; no need to do first_t as if no events then the for loop doesnt run
-        print("\nNotice: You've either not entered any input or havent moved the mouse.")
+        print("\nNotice: You've either not entered any input or havent moved the mouse in the recording.")
 
     escape_detector = threading.Thread(target = detect_escape, daemon = True) # eaerly exit detector
     escape_detector.start()
@@ -207,7 +205,7 @@ def playback_macro():
 
     print("\nPlayback finished.")
 
-# - minor functions -
+# - minor functions - (wrappers)
 def record_combine_save_recording(file_name):
     begin_recording()
     combine_mouse_keyboard_records()
@@ -219,12 +217,56 @@ def load_play_recording(file_name):
 
 #  ----| MACRO FUCTIONS END |----
 
-# keyboard.add_hotkey('ctrl+shift+r+1', record_combine_save_recording, args=['Recording_1']) # press ctrl+shift+r+1 at the same time to activate
-# keyboard.add_hotkey('ctrl+shift+p+1', load_play_recording, args=['Recording_1']) # press ctrl+shift+p+1 at the same time to activate
+#  ----| MACRO CLI PARSER START |----
 
+parser = argparse.ArgumentParser(prog='QuickMacro',
+                                 description="Record or playback recordings.")
 
-begin_recording()
-combine_mouse_keyboard_records()
-save_recording_to_file("Recording_1")
-# retrieve_recording_from_file("Recording_1")
-playback_macro()
+# Global arguments: save file (-s [str]) and delay (-d [float])
+parser.add_argument(
+    "-s", "--save-file",
+    required=True,
+    type = str,
+    default = "Recoding_1",
+    help="File name of the recording WITHOUT file extention (default: Recording_1)."
+)
+parser.add_argument(
+    "-d", "--delay",
+    type = int,
+    default = 3,
+    help = "Seconds to wait before starting (default: 3)."
+)
+
+subparsers = parser.add_subparsers(dest="mode", required=True)
+
+record_parser = subparsers.add_parser("record", help="Record actions")
+# Recording subcommand: move relative (-mr)
+record_parser.add_argument(
+    "-mr", "--move-relative",
+    action="store_true",
+    default=False,
+    help="Record moves relative to the starting point (default: False)."
+)
+
+playback_parser = subparsers.add_parser("playback", help="Playback actions")
+# Playback subcommand: replay speed (-rs [float])
+playback_parser.add_argument(
+    "-rs", "--replay-speed",
+    type=float,
+    default=1.0,
+    help="Delay divider for playback (default: 1.0)."
+)
+
+args = parser.parse_args()
+
+if args.mode == "record":
+    time.sleep(args.delay)
+    move_relative = args.move_relative
+    record_combine_save_recording(args.save_file)
+elif args.mode == "playback":
+    time.sleep(args.delay)
+    replay_speed = args.replay_speed
+    load_play_recording(args.save_file)
+
+#  ----| MACRO CLI PARSER END |----
+
