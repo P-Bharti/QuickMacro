@@ -11,11 +11,15 @@ import time
 
 keyboard_events = []
 mouse_events = []
+combined_events = []
 
-replay_speed = 1 # zero for instant # TODO get into menu
-move_relative = False # TODO get into menu
+replay_speed = 1 # TODO get into menu
+move_relative = True # TODO get into menu
 
-def custom_keyboard_record():
+#  ----| MACRO FUCTIONS START |----
+
+# - minor functions -
+def keyboard_events_indexer():
     # similar to keyboard.record(), but with a few changes
     def append_event(event):
         nonlocal recorded
@@ -31,11 +35,11 @@ def custom_keyboard_record():
 def record_keyboard():
     global keyboard_events
     print("Recording keyboard... Press ESC to stop.")
-    keyboard_events = custom_keyboard_record()
+    keyboard_events = keyboard_events_indexer()
     print("Keyboard recording stopped.")
-    stop_mouse.set() # tells custom_mouse_record() to stop recording
+    stop_mouse.set() # tells mouse_events_indexer() to stop recording
 
-def custom_mouse_record():
+def mouse_events_indexer():
     # similar to mouse.record(), but with a few changes
 
     def append_event(event): # in trackpads, move ends up as an event unlike mouse; so storing x,y so we can manually move it if its confused (gives button type '?')
@@ -52,119 +56,134 @@ def custom_mouse_record():
 def record_mouse():
     global mouse_events
     print("Recording mouse... Press ESC to stop.")
-    mouse_events = custom_mouse_record()
+    mouse_events = mouse_events_indexer()
     print("Mouse recording stopped.")
 
-# recording the macro
-keyboard_thread = threading.Thread(target=record_keyboard)
-mouse_thread = threading.Thread(target=record_mouse)
-stop_mouse = threading.Event()
+# - MAJOR FUNCTION - Uses the four minor functions above to record the macro; Saves recording in keyboard_events list and mouse_events list
+def begin_recording():
+    global stop_mouse
+    keyboard_thread = threading.Thread(target=record_keyboard)
+    mouse_thread = threading.Thread(target=record_mouse)
+    stop_mouse = threading.Event()
 
-print("Recording started... (ESC to end recording)")
-start_time = time.time()
+    print("Recording started... (ESC to end recording)")
+    start_time = time.time()
 
-keyboard_thread.start()
-mouse_thread.start()
+    keyboard_thread.start()
+    mouse_thread.start()
 
-keyboard_thread.join()
-mouse_thread.join()
+    keyboard_thread.join()
+    mouse_thread.join()
 
-end_time = time.time()
-print("\nRecording finished! Duration: " + str(round(end_time - start_time,2)) + " seconds")
+    end_time = time.time()
+    print("\nRecording finished! Duration: " + str(round(end_time - start_time,2)) + " seconds")
 
-# merging and processing into one list named combined_events
-combined_events = []
+# - MAJOR FUNCTION - Merges both event lists, processes and prints the list 'combined_events'
+def combine_mouse_keyboard_records():
+    global combined_events # will be a list of tuples in the format (source, timestamp, event, (pos_x,pos_y))
 
-for item in keyboard_events: # in the format of a tuple (event,(None,None))
-    event = item[0]
-    coordinates = item[1]
-    combined_events.append(("keyboard", event.time, event, coordinates)) # None says that the x and y coords are not taken for keyboard inputs (obviously)
-
-if move_relative == True:
-    for i in range(0,len(mouse_events)): # in the format of a tuple (event,(x_pos,y_pos))
-        event = mouse_events[i][0]
-        if i != 0:
-            coordinates = mouse_events[i][1]
-            prev_coordinates = mouse_events[i-1][1]
-            x_coordinate = coordinates[0] - prev_coordinates[0]
-            y_coordinate = coordinates[1] - prev_coordinates[1]
-            coordinates = (x_coordinate,y_coordinate)
-        else:
-            coordinates = (0,0)
-        combined_events.append(("mouse", event.time, event,coordinates))
-else:
-    for item in mouse_events: # in the format of a tuple (event,(x_pos,y_pos))
+    for item in keyboard_events: # in the format of a tuple (event,(None,None))
         event = item[0]
         coordinates = item[1]
-        combined_events.append(("mouse", event.time, event,coordinates))
+        combined_events.append(("keyboard", event.time, event, coordinates)) # None says that the x and y coords are not taken for keyboard inputs (obviously)
 
-# sort by timestamp
-combined_events.sort(key=lambda x: x[1])
+    if move_relative == True:
+        for i in range(0,len(mouse_events)): # in the format of a tuple (event,(x_pos,y_pos))
+            event = mouse_events[i][0]
+            if i != 0:
+                coordinates = mouse_events[i][1]
+                prev_coordinates = mouse_events[i-1][1]
+                x_coordinate = coordinates[0] - prev_coordinates[0]
+                y_coordinate = coordinates[1] - prev_coordinates[1]
+                coordinates = (x_coordinate,y_coordinate)
+            else:
+                coordinates = (0,0)
+            combined_events.append(("mouse", event.time, event,coordinates))
+    else:
+        for item in mouse_events: # in the format of a tuple (event,(x_pos,y_pos))
+            event = item[0]
+            coordinates = item[1]
+            combined_events.append(("mouse", event.time, event,coordinates))
 
-print("\n--- Combined Timeline ("+ str(len(combined_events)) + " events) ---")
-for source, timestamp, event, (pos_x,pos_y) in combined_events:
-    print(str(round(timestamp,4)), source, event, str(pos_x) + "," + str(pos_y), sep = " | ")
+    # sort by timestamp
+    combined_events.sort(key=lambda x: x[1])
 
+    # pretty printing TODO replace with JSON and save
+    print("\n--- Combined Timeline ("+ str(len(combined_events)) + " events) ---")
+    for source, timestamp, event, (pos_x,pos_y) in combined_events:
+        print(str(round(timestamp,4)), source, event, str(pos_x) + "," + str(pos_y), sep = " | ")
+
+# - minor function -
 def detect_escape():
     keyboard.wait("esc") # will not progress till esc is hit
     escape_found.set()
 
-# playing back the macro
-print("\nReplaying in 3 seconds... Press ESC to quit at any time!")
-time.sleep(3)
+# - MAJOR FUNCTION - Uses the minor function above to detect early quit; Plays back the macro using the list 'combined_events'
+def playback_macro():
+    global escape_found
 
-try: # combined_events in format (source, time, event, coordinates)
-    first_t = combined_events[0][1] # orignially, first timestamp is the prev t
-    first_coordinates = mouse_events[0][1] # mouse_events in the format of a tuple (event,(x_pos,y_pos))
-except IndexError:
-    first_coordinates = (None,None) # if relative is chosen and mouse isnt moved; no need to do first_t as if no events then the for loop doesnt run
-    print("\nNotice: You've either not entered any input or havent moved the mouse.")
+    print("\nReplaying in 3 seconds... Press ESC to quit at any time!")
+    time.sleep(3)
 
-escape_detector = threading.Thread(target = detect_escape, daemon = True) # exit detector
-escape_detector.start()
-escape_found = threading.Event()
+    try: # combined_events in format (source, time, event, coordinates)
+        first_t = combined_events[0][1] # orignially, first timestamp is the prev t
+        first_coordinates = mouse_events[0][1] # mouse_events in the format of a tuple (event,(x_pos,y_pos))
+    except IndexError:
+        first_coordinates = (None,None) # if relative is chosen and mouse isnt moved; no need to do first_t as if no events then the for loop doesnt run
+        print("\nNotice: You've either not entered any input or havent moved the mouse.")
 
-for source, t, event, (pos_x,pos_y) in combined_events:
-    if escape_found.is_set():
-        break
+    escape_detector = threading.Thread(target = detect_escape, daemon = True) # eaerly exit detector
+    escape_detector.start()
+    escape_found = threading.Event()
 
-    delay = (t - first_t)/replay_speed # this makes it real time, but then the computer struggles to do combinations like shift-a
-    first_t = t
-    if delay > 0:
-        time.sleep(delay)
+    for source, t, event, (pos_x,pos_y) in combined_events:
+        if escape_found.is_set():
+            break
 
-    if source == "keyboard":
-        if event.event_type == 'down': # TODO fix '' and "" incosistancy
-            keyboard.press(event.scan_code)
-        elif event.event_type == 'up':
-            keyboard.release(event.scan_code)
-    else:
-        if move_relative == True:
-            if isinstance(event, mouse.ButtonEvent) and event.button == "?":
-                mouse.move(pos_x,pos_y,absolute = False) # to bypass weird trackpad errors (janky, though)
+        delay = (t - first_t)/replay_speed
+        first_t = t
+        if delay > 0:
+            time.sleep(delay)
 
-            elif isinstance(event, mouse.ButtonEvent): # doing manually to help dragging
-                if event.event_type == 'down':
-                    mouse.release(event.button)
-                elif event.event_type == 'up':
-                    mouse.press(event.button)
-
-            if isinstance(event, mouse.MoveEvent):
-                mouse.move(pos_x,pos_y,absolute = False)
-            else: # scrolling doesnt work on ubuntu 24 - idk why
-                mouse.play([event])
+        if source == "keyboard":
+            if event.event_type == 'down': # TODO fix '' and "" incosistancy
+                keyboard.press(event.scan_code)
+            elif event.event_type == 'up':
+                keyboard.release(event.scan_code)
         else:
-            if isinstance(event, mouse.ButtonEvent) and event.button == "?":
-                mouse.move(pos_x,pos_y) # to bypass weird trackpad errors (janky, though)
+            if move_relative == True:
+                if isinstance(event, mouse.ButtonEvent) and event.button == "?":
+                    mouse.move(pos_x,pos_y,absolute = False) # to bypass weird trackpad errors (janky, though)
 
-            elif isinstance(event, mouse.ButtonEvent): # doing manually to help dragging
-                if event.event_type == 'down':
-                    mouse.release(event.button)
-                elif event.event_type == 'up':
-                    mouse.press(event.button)
+                elif isinstance(event, mouse.ButtonEvent): # doing manually to help dragging
+                    if event.event_type == 'down':
+                        mouse.release(event.button)
+                    elif event.event_type == 'up':
+                        mouse.press(event.button)
 
-            else: # scrolling doesnt work on ubuntu 24 - idk why
-                mouse.play([event])
+                if isinstance(event, mouse.MoveEvent):
+                    mouse.move(pos_x,pos_y,absolute = False)
+                else: # scrolling doesnt work on ubuntu 24 - idk why
+                    mouse.play([event])
+            else:
+                if isinstance(event, mouse.ButtonEvent) and event.button == "?":
+                    mouse.move(pos_x,pos_y) # to bypass weird trackpad errors (janky, though)
+
+                elif isinstance(event, mouse.ButtonEvent): # doing manually to help dragging
+                    if event.event_type == 'down':
+                        mouse.release(event.button)
+                    elif event.event_type == 'up':
+                        mouse.press(event.button)
+
+                else: # scrolling doesnt work on ubuntu 24 - idk why
+                    mouse.play([event])
+
+    print("\nPlayback finished.")
+
+#  ----| MACRO FUCTIONS END |----
 
 
-print("\nPlayback finished.")
+begin_recording()
+combine_mouse_keyboard_records()
+playback_macro()
+
