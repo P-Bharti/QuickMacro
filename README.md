@@ -3,7 +3,7 @@
 **QuickMacro** is a Python tool for recording and replaying mouse and keyboard actions.  
 It uses the [`keyboard`](https://pypi.org/project/keyboard/) and [`mouse`](https://pypi.org/project/mouse/) libraries to capture user input and simulate playback.
 
-* Strictly a automation tool; Do not attempt to use for games (it won't work anyways)
+* Strictly an automation tool; Do not attempt to use for games (it won't work anyways)
 ---
 
 ## Features
