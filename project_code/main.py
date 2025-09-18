@@ -1,7 +1,7 @@
 import keyboard
 import mouse
 import threading
-import time # TODO hotkey to activate (menu)
+import time
 '''
     To fix a issue in the library 'mouse' set the _nixcommon.py code as the following if the mouse clicks, etc don't work (lines 31-33)
     UI_SET_KEYBIT = 0x40045565
@@ -17,7 +17,7 @@ move_relative = False # TODO get into menu
 
 def custom_keyboard_record():
     # similar to keyboard.record(), but with a few changes
-    def append_event(event): # TODO add hotkey support for stuff like shift+a
+    def append_event(event):
         nonlocal recorded
         recorded.append((event,(None,None))) # None says that the x and y coords are not taken for keyboard inputs (unlike mouse)
 
@@ -72,7 +72,7 @@ mouse_thread.join()
 end_time = time.time()
 print("\nRecording finished! Duration: " + str(round(end_time - start_time,2)) + " seconds")
 
-# merging into one list named combined_events
+# merging and processing into one list named combined_events
 combined_events = []
 
 for item in keyboard_events: # in the format of a tuple (event,(None,None))
@@ -116,9 +116,9 @@ time.sleep(3)
 try: # combined_events in format (source, time, event, coordinates)
     first_t = combined_events[0][1] # orignially, first timestamp is the prev t
     first_coordinates = mouse_events[0][1] # mouse_events in the format of a tuple (event,(x_pos,y_pos))
-
 except IndexError:
-    print("\nNo events detected!")
+    first_coordinates = (None,None) # if relative is chosen and mouse isnt moved; no need to do first_t as if no events then the for loop doesnt run
+    print("\nYou've either not entered any input or havent moved the mouse.")
 
 escape_detector = threading.Thread(target = detect_escape, daemon = True) # exit detector
 escape_detector.start()
@@ -134,7 +134,10 @@ for source, t, event, (pos_x,pos_y) in combined_events:
         time.sleep(delay)
 
     if source == "keyboard":
-        keyboard.play([event])
+        if event.event_type == 'down': # TODO fix '' and "" incosistancy
+            keyboard.press(event.name)
+        elif event.event_type == 'up':
+            keyboard.release(event.name)
     else:
         if move_relative == True:
             if isinstance(event, mouse.ButtonEvent) and event.button == "?":
