@@ -6,7 +6,6 @@ It uses the [`keyboard`](https://pypi.org/project/keyboard/) and [`mouse`](https
 ---
 
 ## Features
-
 - **Record** mouse and keyboard actions simultaneously
 - **Playback** recordings at adjustable speeds  
 - (Hypothetially) Cross Platform
@@ -59,11 +58,6 @@ python main.py -s Recording_1 -d 3 record -mr
 ## Playback Mode
 Replay a saved recording:
 
-```
-python main.py playback -s my_recording
-```
-
-Options:
 | Argument | Type | Default | Description |
 |----------|------|---------|-------------|
 | `-rs`, `--replay-speed` | `float` | `1.0` | Adjust playback delay divisor. |
