@@ -2,8 +2,9 @@ import keyboard
 import mouse
 import threading
 import time
+import pickle
 '''
-    To fix a issue in the library 'mouse' set the _nixcommon.py code as the following if the mouse clicks, etc don't work (lines 31-33)
+    To fix a issue in the library "mouse" set the _nixcommon.py code as the following if the mouse clicks, etc don't work (lines 31-33)
     UI_SET_KEYBIT = 0x40045565
     for i in range(0x115): # CHANGE ADDED: https://github.com/boppreh/mouse/issues/37#issuecomment-1672929057
         fcntl.ioctl(uinput, UI_SET_KEYBIT, i)
@@ -13,6 +14,7 @@ keyboard_events = []
 mouse_events = []
 combined_events = []
 
+end_recording_hotkey = "esc" # for custom bindings, either use the scan code of the key (56 for space for eg.) or in the format: ' ' or in the format 'space'
 replay_speed = 1 # TODO get into menu
 move_relative = False # TODO get into menu
 
@@ -27,7 +29,7 @@ def keyboard_events_indexer():
 
     recorded = []
     keyboard.hook(append_event)
-    keyboard.wait("esc")
+    keyboard.wait(end_recording_hotkey)
     keyboard.unhook(append_event)
     recorded = recorded[:-1] # removes the esc exit key from events
     return recorded
@@ -78,7 +80,7 @@ def begin_recording():
     end_time = time.time()
     print("\nRecording finished! Duration: " + str(round(end_time - start_time,2)) + " seconds")
 
-# - MAJOR FUNCTION - Merges both event lists, processes and prints the list 'combined_events'
+# - MAJOR FUNCTION - Merges both event lists, processes and prints the list "combined_events"
 def combine_mouse_keyboard_records():
     global combined_events # will be a list of tuples in the format (source, timestamp, event, (pos_x,pos_y))
 
@@ -108,59 +110,47 @@ def combine_mouse_keyboard_records():
     # sort by timestamp
     combined_events.sort(key=lambda x: x[1])
 
-    # pretty printing TODO replace with JSON and save
+    # pretty printing the recording
     print(combined_events) # DEBUG
     print("\n--- Combined Timeline ("+ str(len(combined_events)) + " events) ---")
     for source, timestamp, event, (pos_x,pos_y) in combined_events:
         print(str(round(timestamp,4)), source, event, str(pos_x) + "," + str(pos_y), sep = " | ")
 
-# - MAJOR FUNCTION (pt. 1 of 2) - Saves the list 'combined_events' to a txt file
+# - MAJOR FUNCTION (pt. 1 of 2) - Saves the list "combined_events" to a txt file
 def save_recording_to_file(file_name):
-    file_writer = open(file_name + ".txt", "w")
-    formatted_lines = []
+    file_writer = open(file_name + ".dat", "wb")
 
-    for source, timestamp, event, (pos_x,pos_y) in combined_events: # appends in format timestamp | source | event | pos_x,pos_y \n
-        formatted_lines.append(" | ".join([str(round(timestamp,4)), source, str(event), str(pos_x) + "," + str(pos_y)]) + '\n')
-
-    file_writer.writelines(formatted_lines)
+    for i in combined_events:
+        pickle.dump(i,file_writer)
 
     file_writer.close()
 
-# - MAJOR FUNCTION (pt. 2 of 2) - Retrieves data from the txt file and sends to the list 'combined_events' TODO make this work
+# - MAJOR FUNCTION (pt. 2 of 2) - Retrieves data from the txt file and sends to the list "combined_events"
 def retrieve_recording_from_file(file_name):
     global combined_events
 
-    file_opener = open(file_name + ".txt", "r")
-    retrieved_lines = file_opener.readlines()
+    file_opener = open(file_name + ".dat", "rb")
+    retrieved_lines = []
+    try:
+        while True:
+            retrieved_lines.append(pickle.load(file_opener))
+    except EOFError:
+        pass
+
     file_opener.close()
 
-    deformatted_lines = []
-
-    for i in retrieved_lines:
-        i = i[:-1] # to remove the /n charector at the end of each line
-
-        append_value = i.split(" | ")
-        temp = append_value[1] # swapping timestamp and source again
-        append_value[1] = append_value[0]
-        append_value[0] = temp
-
-        append_value[3] = tuple(append_value[3].split(',')) # splits the cordinates into (pos_x,pos_y)
-        append_value = tuple(append_value)
-
-        deformatted_lines.append(append_value)
-
-    combined_events = deformatted_lines
+    combined_events = retrieved_lines
 
 # - minor function -
 def detect_escape():
     keyboard.wait("esc") # will not progress till esc is hit
     escape_found.set()
 
-# - MAJOR FUNCTION - Uses the one minor function above to detect early quit; Plays back the macro using the list 'combined_events'
+# - MAJOR FUNCTION - Uses the one minor function above to detect early quit; Plays back the macro using the list "combined_events"
 def playback_macro():
     global escape_found
 
-    print("\nReplaying in 3 seconds... Press ESC to quit at any time!")
+    print("\nReplaying in 3 seconds... Press ESC to quit at any time!") # TODO make instant later
     time.sleep(3)
 
     try: # combined_events in format (source, time, event, coordinates)
@@ -173,7 +163,6 @@ def playback_macro():
     escape_detector = threading.Thread(target = detect_escape, daemon = True) # eaerly exit detector
     escape_detector.start()
     escape_found = threading.Event()
-
     for source, t, event, (pos_x,pos_y) in combined_events:
         if escape_found.is_set():
             break
@@ -184,9 +173,9 @@ def playback_macro():
             time.sleep(delay)
 
         if source == "keyboard":
-            if event.event_type == 'down': # TODO fix '' and "" incosistancy
+            if event.event_type == "down":
                 keyboard.press(event.scan_code)
-            elif event.event_type == 'up':
+            elif event.event_type == "up":
                 keyboard.release(event.scan_code)
         else:
             if move_relative == True:
@@ -194,9 +183,9 @@ def playback_macro():
                     mouse.move(pos_x,pos_y,absolute = False) # to bypass weird trackpad errors (janky, though)
 
                 elif isinstance(event, mouse.ButtonEvent): # doing manually to help dragging
-                    if event.event_type == 'down':
+                    if event.event_type == "down":
                         mouse.release(event.button)
-                    elif event.event_type == 'up':
+                    elif event.event_type == "up":
                         mouse.press(event.button)
 
                 if isinstance(event, mouse.MoveEvent):
@@ -208,9 +197,9 @@ def playback_macro():
                     mouse.move(pos_x,pos_y) # to bypass weird trackpad errors (janky, though)
 
                 elif isinstance(event, mouse.ButtonEvent): # doing manually to help dragging
-                    if event.event_type == 'down':
+                    if event.event_type == "down":
                         mouse.release(event.button)
-                    elif event.event_type == 'up':
+                    elif event.event_type == "up":
                         mouse.press(event.button)
 
                 else: # scrolling doesnt work on ubuntu 24 - idk why
@@ -218,7 +207,20 @@ def playback_macro():
 
     print("\nPlayback finished.")
 
+# - minor functions -
+def record_combine_save_recording(file_name):
+    begin_recording()
+    combine_mouse_keyboard_records()
+    save_recording_to_file(file_name)
+
+def load_play_recording(file_name):
+    retrieve_recording_from_file(file_name)
+    playback_macro()
+
 #  ----| MACRO FUCTIONS END |----
+
+# keyboard.add_hotkey('ctrl+shift+r+1', record_combine_save_recording, args=['Recording_1']) # press ctrl+shift+r+1 at the same time to activate
+# keyboard.add_hotkey('ctrl+shift+p+1', load_play_recording, args=['Recording_1']) # press ctrl+shift+p+1 at the same time to activate
 
 
 begin_recording()
