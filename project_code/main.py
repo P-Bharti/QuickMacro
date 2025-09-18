@@ -12,7 +12,7 @@ import time
 keyboard_events = []
 mouse_events = []
 
-replay_speed = 1 # TODO get into menu (zero for instant)
+replay_speed = 1 # zero for instant # TODO get into menu
 move_relative = False # TODO get into menu
 
 def custom_keyboard_record():
@@ -118,7 +118,7 @@ try: # combined_events in format (source, time, event, coordinates)
     first_coordinates = mouse_events[0][1] # mouse_events in the format of a tuple (event,(x_pos,y_pos))
 except IndexError:
     first_coordinates = (None,None) # if relative is chosen and mouse isnt moved; no need to do first_t as if no events then the for loop doesnt run
-    print("\nYou've either not entered any input or havent moved the mouse.")
+    print("\nNotice: You've either not entered any input or havent moved the mouse.")
 
 escape_detector = threading.Thread(target = detect_escape, daemon = True) # exit detector
 escape_detector.start()
@@ -135,13 +135,20 @@ for source, t, event, (pos_x,pos_y) in combined_events:
 
     if source == "keyboard":
         if event.event_type == 'down': # TODO fix '' and "" incosistancy
-            keyboard.press(event.name)
+            keyboard.press(event.scan_code)
         elif event.event_type == 'up':
-            keyboard.release(event.name)
+            keyboard.release(event.scan_code)
     else:
         if move_relative == True:
             if isinstance(event, mouse.ButtonEvent) and event.button == "?":
                 mouse.move(pos_x,pos_y,absolute = False) # to bypass weird trackpad errors (janky, though)
+
+            elif isinstance(event, mouse.ButtonEvent): # doing manually to help dragging
+                if event.event_type == 'down':
+                    mouse.release(event.button)
+                elif event.event_type == 'up':
+                    mouse.press(event.button)
+
             if isinstance(event, mouse.MoveEvent):
                 mouse.move(pos_x,pos_y,absolute = False)
             else: # scrolling doesnt work on ubuntu 24 - idk why
@@ -149,8 +156,15 @@ for source, t, event, (pos_x,pos_y) in combined_events:
         else:
             if isinstance(event, mouse.ButtonEvent) and event.button == "?":
                 mouse.move(pos_x,pos_y) # to bypass weird trackpad errors (janky, though)
+
+            elif isinstance(event, mouse.ButtonEvent): # doing manually to help dragging
+                if event.event_type == 'down':
+                    mouse.release(event.button)
+                elif event.event_type == 'up':
+                    mouse.press(event.button)
+
             else: # scrolling doesnt work on ubuntu 24 - idk why
                 mouse.play([event])
 
-print("\nPlayback finished.")
 
+print("\nPlayback finished.")
