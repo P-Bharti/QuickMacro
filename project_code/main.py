@@ -1,7 +1,7 @@
 import keyboard
 import mouse
 import threading
-import time
+import time # TODO hotkey to activate (menu)
 '''
     To fix a issue in the library 'mouse' set the _nixcommon.py code as the following if the mouse clicks, etc don't work (lines 31-33)
     UI_SET_KEYBIT = 0x40045565
@@ -11,6 +11,9 @@ import time
 
 keyboard_events = []
 mouse_events = []
+
+replay_speed = 1 # TODO get into menu (zero for instant)
+move_relative = False # TODO get into menu
 
 def custom_keyboard_record():
     # similar to keyboard.record(), but with a few changes
@@ -77,10 +80,23 @@ for item in keyboard_events: # in the format of a tuple (event,(None,None))
     coordinates = item[1]
     combined_events.append(("keyboard", event.time, event, coordinates)) # None says that the x and y coords are not taken for keyboard inputs (obviously)
 
-for item in mouse_events: # in the format of a tuple (event,(x_pos,y_pos))
-    event = item[0]
-    coordinates = item[1]
-    combined_events.append(("mouse", event.time, event,coordinates))
+if move_relative == True:
+    for i in range(0,len(mouse_events)): # in the format of a tuple (event,(x_pos,y_pos))
+        event = mouse_events[i][0]
+        if i != 0:
+            coordinates = mouse_events[i][1]
+            prev_coordinates = mouse_events[i-1][1]
+            x_coordinate = coordinates[0] - prev_coordinates[0]
+            y_coordinate = coordinates[1] - prev_coordinates[1]
+            coordinates = (x_coordinate,y_coordinate)
+        else:
+            coordinates = (0,0)
+        combined_events.append(("mouse", event.time, event,coordinates))
+else:
+    for item in mouse_events: # in the format of a tuple (event,(x_pos,y_pos))
+        event = item[0]
+        coordinates = item[1]
+        combined_events.append(("mouse", event.time, event,coordinates))
 
 # sort by timestamp
 combined_events.sort(key=lambda x: x[1])
@@ -93,38 +109,46 @@ def detect_escape():
     keyboard.wait("esc") # will not progress till esc is hit
     escape_found.set()
 
-
 # playing back the macro
 print("\nReplaying in 3 seconds... Press ESC to quit at any time!")
 time.sleep(3)
 
-try:
-    prev_t = combined_events[0][1] # orignially, first timestamp is the prev t
+try: # combined_events in format (source, time, event, coordinates)
+    first_t = combined_events[0][1] # orignially, first timestamp is the prev t
+    first_coordinates = mouse_events[0][1] # mouse_events in the format of a tuple (event,(x_pos,y_pos))
+
 except IndexError:
     print("\nNo events detected!")
-
-replay_speed = 1
 
 escape_detector = threading.Thread(target = detect_escape) # exit detector
 escape_detector.start()
 escape_found = threading.Event()
 
-for src, t, ev, (pos_x,pos_y) in combined_events:
+for source, t, event, (pos_x,pos_y) in combined_events:
     if escape_found.is_set():
         break
 
-    delay = (t - prev_t)/replay_speed # this makes it real time, but then the computer struggles to do combinations like shift-a
-    prev_t = t
+    delay = (t - first_t)/replay_speed # this makes it real time, but then the computer struggles to do combinations like shift-a
+    first_t = t
     if delay > 0:
         time.sleep(delay)
 
-    if src == "keyboard":
-        keyboard.play([ev])
+    if source == "keyboard":
+        keyboard.play([event])
     else:
-        if isinstance(ev, mouse.ButtonEvent) and ev.button == "?":
-            mouse.move(pos_x,pos_y) # to bypass weird trackpad errors (janky, though)
-        else: # scrolling doesnt work on ubuntu 24 - idk why
-            mouse.play([ev])
+        if move_relative == True:
+            if isinstance(event, mouse.ButtonEvent) and event.button == "?":
+                mouse.move(pos_x,pos_y,absolute = False) # to bypass weird trackpad errors (janky, though)
+            if isinstance(event, mouse.MoveEvent):
+                mouse.move(pos_x,pos_y,absolute = False)
+            else: # scrolling doesnt work on ubuntu 24 - idk why
+                mouse.play([event])
+        else:
+            if isinstance(event, mouse.ButtonEvent) and event.button == "?":
+                mouse.move(pos_x,pos_y) # to bypass weird trackpad errors (janky, though)
+            else: # scrolling doesnt work on ubuntu 24 - idk why
+                mouse.play([event])
 
 escape_detector.join()
 print("\nPlayback finished.")
+
