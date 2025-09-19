@@ -1,10 +1,10 @@
+#!/usr/bin/env python3
 import keyboard
 import mouse
 import threading
 import time
 import pickle
 import argparse
-import sys
 '''
     To fix a issue in the library "mouse" set the _nixcommon.py code as the following if the mouse clicks, etc don't work (lines 31-33)
     UI_SET_KEYBIT = 0x40045565
@@ -231,9 +231,9 @@ parser.add_argument(
 )
 parser.add_argument(
     "-d", "--delay",
-    type = int,
-    default = 3,
-    help = "Seconds to wait before starting (default: 3)."
+    type = float,
+    default = 3.0,
+    help = "Seconds to wait before starting (default: 3.0)."
 )
 
 subparsers = parser.add_subparsers(dest="mode", required=True)
