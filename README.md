@@ -27,7 +27,7 @@ cd QuickMacro
 ```
 Install dependencies:
 It is dependendant on the keyboard and mouse libraries, but they have been provided.
-> Note that the mouse's nix_common file (and the same file thats in the keyboard library for some reaseo) has a change on line 32: for i in range(0x115): # CHANGE ADDED: https://github.com/boppreh/mouse/issues/37#issuecomment-1672929057
+> Note that the mouse's nix_common file (and the same file thats in the keyboard library for some reason) has a change on line 32: for i in range(0x115): # CHANGE ADDED: https://github.com/boppreh/mouse/issues/37#issuecomment-1672929057
 
 ## Usage
 QuickMacro provides a command-line interface (CLI) to record and playback actions.
