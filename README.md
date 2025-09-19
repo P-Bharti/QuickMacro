@@ -22,17 +22,18 @@ It uses the [`keyboard`](https://pypi.org/project/keyboard/) and [`mouse`](https
 Clone the repository:
 
 ```
-git clone https://github.com/yourusername/QuickMacro.git
+git clone https://github.com/P-Bharti/QuickMacro.git
 cd QuickMacro
 ```
 Install dependencies:
+It is dependendant on the keyboard and mouse libraries, but they have been provided.
+> Note that the mouse's nix_common file (and the same file thats in the keyboard library for some reaseo) has a change on line 32: for i in range(0x115): # CHANGE ADDED: https://github.com/boppreh/mouse/issues/37#issuecomment-1672929057
 
-```
-pip install keyboard mouse
-```
 ## Usage
 QuickMacro provides a command-line interface (CLI) to record and playback actions.
 It is recommended to save the command such that it runs via a hotkey of your design in your system settings. (so a hotkey to record and a hotkey to play)
+
+On *nix systems, you are required to chmod +x main.py via the terminal, or otherwise to make the script executable
 
 ## Global Arguments
 | Argument | Type | Default | Description |
@@ -50,10 +51,17 @@ Record mouse and keyboard actions (press ESC to end recording, or modify main.py
 |----------|------|---------|-------------|
 | `-mr`, `--move-relative` | `flag` | `False` | Record mouse moves relative to the starting point. |
 
-Example:
-
+EXAMPLE FOR WINDOWS (When terminal is in the directory of the script; otherwise write the path to it):
 ```
 python main.py -s Recording_1 -d 3 record -mr
+```
+EXAMPLE FOR LINIX (When terminal is in the directory of the script; otherwise write the path to it):
+```
+sudo ./main.py -s Recording_1 -d 3 record -mr
+```
+EXAMPLE FOR UNIX (When terminal is in the directory of the script; otherwise write the path to it) (also terminal/python requires accessibility permissions in System Preferences -> Security & Privacy):
+```
+./main.py -s Recording_1 -d 3 record -mr
 ```
 > Waits 3 seconds before starting, then records with relative mouse movement enabled.
 
@@ -65,9 +73,17 @@ Replay a saved recording:
 | `-rs`, `--replay-speed` | `float` | `1.0` | Adjust playback delay divisor. |
 
 
-Example:
+EXAMPLE FOR WINDOWS (When terminal is in the directory of the script; otherwise write the path to it):
 ```
 python main.py -s Recording_1 playback -rs 2
+```
+EXAMPLE FOR LINIX (When terminal is in the directory of the script; otherwise write the path to it):
+```
+sudo ./main.py -s Recording_1 -playback -rs 2
+```
+EXAMPLE FOR UNIX (When terminal is in the directory of the script; otherwise write the path to it) (also terminal/python requires accessibility permissions in System Preferences -> Security & Privacy):
+```
+./main.py -s Recording_1 playback -rs 2
 ```
 > Plays the recording at double speed.
 
