@@ -10,7 +10,8 @@ It uses the [`keyboard`](https://pypi.org/project/keyboard/) and [`mouse`](https
 - **Record** mouse and keyboard actions simultaneously
 - **Playback** recordings at adjustable speeds  
 - (Hypothetially) Cross Platform
-- Mouse animation on X11 (Linux)  
+- Mouse animation on X11 (Linux)
+- Rudementary trackpad support (move relative doesn't work)  
 
 > Note that on linux, the script requires sudo (to access inputs without being X11 dependant) and on mac requires granting accessibility permissions to terminal/python in System Preferences -> Security & Privacy
 
@@ -43,7 +44,7 @@ It is recommended to save the command such that it runs via a hotkey of your des
 and of course, --help or -h for help
 
 ## Record Arguments
-Record mouse and keyboard actions:
+Record mouse and keyboard actions (press ESC to end recording, or modify main.py's end_recording_hotkey to change):
 
 | Argument | Type | Default | Description |
 |----------|------|---------|-------------|
