@@ -32,6 +32,15 @@ It is dependendant on the keyboard and mouse libraries, but they have been provi
 ## Usage
 QuickMacro provides a command-line interface (CLI) to record and playback actions.
 It is recommended to save the command such that it runs via a hotkey of your design in your system settings. (so a hotkey to record and a hotkey to play)
+<br></br>
+For Example, the line might be:
+```
+cd /path/to/QuickMacro && sudo ./main.py -s [file_name] -d [delay] record [-mr only if you want relative motion]
+```
+```
+cd /path/to/QuickMacro && sudo ./main.py -s [file_name] -d [delay] playback -rs [replay speed]
+```
+> These commands are for Linux, and may be placed in the custom shortcut option in your settings
 
 On *nix systems, you are required to chmod +x main.py via the terminal, or otherwise to make the script executable
 
