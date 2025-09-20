@@ -55,7 +55,7 @@ EXAMPLE FOR WINDOWS (When terminal is in the directory of the script; otherwise 
 ```
 python main.py -s Recording_1 -d 3 record -mr
 ```
-EXAMPLE FOR LINIX (When terminal is in the directory of the script; otherwise write the path to it):
+EXAMPLE FOR LINUX (When terminal is in the directory of the script; otherwise write the path to it):
 ```
 sudo ./main.py -s Recording_1 -d 3 record -mr
 ```
@@ -77,7 +77,7 @@ EXAMPLE FOR WINDOWS (When terminal is in the directory of the script; otherwise 
 ```
 python main.py -s Recording_1 playback -rs 2
 ```
-EXAMPLE FOR LINIX (When terminal is in the directory of the script; otherwise write the path to it):
+EXAMPLE FOR LINUX (When terminal is in the directory of the script; otherwise write the path to it):
 ```
 sudo ./main.py -s Recording_1 -playback -rs 2
 ```
