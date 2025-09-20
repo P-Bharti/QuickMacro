@@ -35,12 +35,12 @@ It is recommended to save the command such that it runs via a hotkey of your des
 <br></br>
 For Example, the line might be:
 ```
-cd /path/to/QuickMacro && sudo ./main.py -s [file_name] -d [delay] record [-mr only if you want relative motion]
+bash -c "cd /path/to/QuickMacro && pkexec ./main.py -s [file_name] -d [delay] record [-mr only if you want relative motion]"
 ```
 ```
-cd /path/to/QuickMacro && sudo ./main.py -s [file_name] -d [delay] playback -rs [replay speed]
+bash -c "cd /path/to/QuickMacro && pkexec ./main.py -s [file_name] -d [delay] playback -rs [replay speed]"
 ```
-> These commands are for Linux, and may be placed in the custom shortcut option in your settings
+> These particular commands are for Ubuntu, and may be placed in the custom shortcut option in the settings (under keyboard at the end).
 
 On *nix systems, you are required to chmod +x main.py via the terminal, or otherwise to make the script executable
 
