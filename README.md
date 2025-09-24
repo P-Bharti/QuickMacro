@@ -32,7 +32,7 @@ It is dependendant on the keyboard and mouse libraries, but they have been provi
 ## Usage
 QuickMacro provides a command-line interface (CLI) to record and playback actions.
 It is recommended to save the command such that it runs via a hotkey of your design in your system settings. (so a hotkey to record and a hotkey to play)
-<br></br>
+<br>
 For Example, the line might be:
 ```
 bash -c "cd /path/to/QuickMacro && pkexec ./main.py -s [file_name] -d [delay] record [-mr only if you want relative motion]"
@@ -45,6 +45,7 @@ bash -c "cd /path/to/QuickMacro && pkexec ./main.py -s [file_name] -d [delay] pl
 On *nix systems, you are required to chmod +x main.py via the terminal, or otherwise to make the script executable
 
 ## Global Arguments
+
 | Argument | Type | Default | Description |
 |----------|------|---------|-------------|
 | `-s`, `--save-file` | `str` | `Recording_1` | File name for the recording (without extension).|
