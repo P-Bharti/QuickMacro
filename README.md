@@ -42,10 +42,10 @@ bash -c "cd /path/to/QuickMacro && pkexec ./main.py -s [file_name] -d [delay] pl
 ```
 > The above commands would require a password each time when run; To avoid this, you can use the format below:
 ```
-bash -c "cd /path/to/QuickMacro && echo "your_root_password" | sudo -S ./main.py -s [file_name] -d [delay] record [-mr only if you want relative motion]"
+bash -c "cd /path/to/QuickMacro && export HISTIGNORE='*sudo -S*' && echo "your_root_password" | sudo -S ./main.py -s [file_name] -d [delay] record [-mr only if you want relative motion]"
 ```
 ```
-bash -c "cd /path/to/QuickMacro && echo "your_root_password" | sudo -S ./main.py -s [file_name] -d [delay] playback -rs [replay speed]"
+bash -c "cd /path/to/QuickMacro && export HISTIGNORE='*sudo -S*' && echo "your_root_password" | sudo -S ./main.py -s [file_name] -d [delay] playback -rs [replay speed]"
 ```
 
 > All These particular commands are for Ubuntu, and may be placed in the custom shortcut option in the settings (under keyboard at the end).
