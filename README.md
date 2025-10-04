@@ -11,7 +11,7 @@ It uses the [`keyboard`](https://pypi.org/project/keyboard/) and [`mouse`](https
 - **Playback** recordings at adjustable speeds  
 - (Hypothetially) Cross Platform
 - Mouse animation on X11 (Linux)
-- Rudementary trackpad support (move relative doesn't work)  
+- Rudementary trackpad support
 
 > Note that on linux, the script requires sudo (to access inputs without being X11 dependant) and on mac requires granting accessibility permissions to terminal/python in System Preferences -> Security & Privacy
 
