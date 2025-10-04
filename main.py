@@ -18,7 +18,7 @@ combined_events = []
 
 end_recording_hotkey = "esc" # for custom bindings, either use the scan code of the key (56 for space for eg.) or in the format: ' ' or in the format 'space'
 replay_speed = 1 # subject to change by parser in MACRO CLI PARSER section
-move_relative = False # subject to change by parser in MACRO CLI PARSER section
+move_relative = False # subject to change by function retrieve_recording_from_file() from MACRO FUCTIONS and by parser in MACRO CLI PARSER section
 
 #  ----| MACRO FUCTIONS START |----
 
@@ -121,6 +121,11 @@ def combine_mouse_keyboard_records():
 def save_recording_to_file(file_name):
     file_writer = open(file_name + ".dat", "wb")
 
+    if move_relative == False: # first line in file denotes whether mouse should move relative or not
+        pickle.dump("ABSOLUTE_RECORDING",file_writer)
+    else:
+        pickle.dump("RELATIVE_RECORDING",file_writer)
+    
     for i in combined_events:
         pickle.dump(i,file_writer)
 
@@ -128,10 +133,17 @@ def save_recording_to_file(file_name):
 
 # - MAJOR FUNCTION (pt. 2 of 2) - Retrieves data from the txt file and sends to the list "combined_events"
 def retrieve_recording_from_file(file_name):
-    global combined_events
+    global combined_events, move_relative
 
     file_opener = open(file_name + ".dat", "rb")
     retrieved_lines = []
+
+    recording_type = pickle.load(file_opener) # first line in file denotes whether mouse should move relative or not
+    if recording_type == "ABSOLUTE_RECORDING":
+        move_relative = False
+    elif recording_type == "RELATIVE_RECORDING":
+        move_relative = True
+        
     try:
         while True:
             retrieved_lines.append(pickle.load(file_opener))
@@ -181,14 +193,14 @@ def playback_macro():
             if move_relative == True:
                 if isinstance(event, mouse.ButtonEvent) and event.button == "?":
                     mouse.move(pos_x,pos_y,absolute = False) # to bypass weird trackpad errors (janky, though)
-
+                    
                 elif isinstance(event, mouse.ButtonEvent): # doing manually to help dragging
                     if event.event_type == "down":
                         mouse.release(event.button)
                     elif event.event_type == "up":
                         mouse.press(event.button)
 
-                if isinstance(event, mouse.MoveEvent):
+                elif isinstance(event, mouse.MoveEvent):
                     mouse.move(pos_x,pos_y,absolute = False)
                 else: # scrolling doesnt work on ubuntu 24 - idk why
                     mouse.play([event])
