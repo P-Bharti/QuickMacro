@@ -1,0 +1,12 @@
+# Following 4 lines for ignoring py_cache (including the comment as a line)
+# Byte-compiled / optimized / DLL files
+keyboard/__pycache__/
+mouse/__pycache__/
+keyboard/*.py[cod]
+mouse/*.py[cod]
+
+# Ignore all .dat files
+*.dat
+
+# VS Code workspace settings
+.vscode/settings.json
