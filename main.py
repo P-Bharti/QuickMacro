@@ -161,6 +161,8 @@ def playback_macro():
     escape_detector = threading.Thread(target = detect_escape, daemon = True) # early exit detector
     escape_detector.start()
     escape_found = threading.Event()
+
+    keyboard.release('space') # fixes a bug where the first letter isnt captured
     for source, t, event, (pos_x,pos_y) in combined_events:
         if escape_found.is_set():
             break
