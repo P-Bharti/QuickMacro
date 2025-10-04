@@ -119,13 +119,13 @@ def combine_mouse_keyboard_records():
 
 # - MAJOR FUNCTION (pt. 1 of 2) - Saves the list "combined_events" to a txt file
 def save_recording_to_file(file_name):
-    file_writer = open(file_name + ".dat", "wb")
+    file_writer = open(file_name + ".pkl", "wb")
 
     if move_relative == False: # first line in file denotes whether mouse should move relative or not
         pickle.dump("ABSOLUTE_RECORDING",file_writer)
     else:
         pickle.dump("RELATIVE_RECORDING",file_writer)
-    
+
     for i in combined_events:
         pickle.dump(i,file_writer)
 
@@ -135,7 +135,7 @@ def save_recording_to_file(file_name):
 def retrieve_recording_from_file(file_name):
     global combined_events, move_relative
 
-    file_opener = open(file_name + ".dat", "rb")
+    file_opener = open(file_name + ".pkl", "rb")
     retrieved_lines = []
 
     recording_type = pickle.load(file_opener) # first line in file denotes whether mouse should move relative or not
@@ -143,7 +143,7 @@ def retrieve_recording_from_file(file_name):
         move_relative = False
     elif recording_type == "RELATIVE_RECORDING":
         move_relative = True
-        
+
     try:
         while True:
             retrieved_lines.append(pickle.load(file_opener))
@@ -193,7 +193,7 @@ def playback_macro():
             if move_relative == True:
                 if isinstance(event, mouse.ButtonEvent) and event.button == "?":
                     mouse.move(pos_x,pos_y,absolute = False) # to bypass weird trackpad errors (janky, though)
-                    
+
                 elif isinstance(event, mouse.ButtonEvent): # doing manually to help dragging
                     if event.event_type == "down":
                         mouse.release(event.button)
@@ -241,7 +241,7 @@ parser.add_argument(
     "-s", "--save-file",
     type = str,
     default = "Recoding_1",
-    help="File name of the recording WITHOUT file extention (default: Recording_1)."
+    help="File name of the recording WITHOUT file extension (default: Recording_1)."
 )
 parser.add_argument(
     "-d", "--delay",
