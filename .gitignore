@@ -4,8 +4,8 @@ mouse/__pycache__/
 keyboard/*.py[cod]
 mouse/*.py[cod]
 
-# Ignore all .dat files
-*.dat
+# Ignore all .pkl files
+*.pkl
 
 # VS Code workspace settings
 .vscode/settings.json
