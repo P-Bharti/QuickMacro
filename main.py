@@ -233,7 +233,7 @@ def load_play_recording(file_name):
 
 #  ----| MACRO CLI PARSER START |----
 
-parser = argparse.ArgumentParser(prog='QuickMacro',
+parser = argparse.ArgumentParser(prog='quick-macro',
                                  description="Record or playback recordings.")
 
 # Global arguments: save file (-s [str]) and delay (-d [float])
