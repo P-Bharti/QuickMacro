@@ -1,6 +1,6 @@
-# QuickMacro
+# quick-macro
 
-**QuickMacro** is a Python tool for recording and replaying mouse and keyboard actions.  
+**quick-macro** is a Python tool for recording and replaying mouse and keyboard actions.  
 It uses the [`keyboard`](https://pypi.org/project/keyboard/) and [`mouse`](https://pypi.org/project/mouse/) libraries to capture user input and simulate playback.
 
 * Strictly an automation tool; Do not attempt to use for games (it won't work anyways)
@@ -22,30 +22,30 @@ It uses the [`keyboard`](https://pypi.org/project/keyboard/) and [`mouse`](https
 Clone the repository:
 
 ```
-git clone https://github.com/P-Bharti/QuickMacro.git
-cd QuickMacro
+git clone https://github.com/P-Bharti/quick-macro.git
+cd quick-macro
 ```
 Install dependencies:
 It is dependendant on the keyboard and mouse libraries, but they have been provided.
 > Note that the mouse's nix_common file (and the same file thats in the keyboard library for some reason) has a change on line 32: for i in range(0x115): # CHANGE ADDED: https://github.com/boppreh/mouse/issues/37#issuecomment-1672929057
 
 ## Usage
-QuickMacro provides a command-line interface (CLI) to record and playback actions.
+quick-macro provides a command-line interface (CLI) to record and playback actions.
 It is recommended to save the command such that it runs via a hotkey of your design in your system settings. (so a hotkey to record and a hotkey to play)
 <br>
 For Example, the line might be:
 ```
-bash -c "cd /path/to/QuickMacro && pkexec ./main.py -s [file_name] -d [delay] record [-mr only if you want relative motion]"
+bash -c "cd /path/to/quick-macro && pkexec ./main.py -s [file_name] -d [delay] record [-mr only if you want relative motion]"
 ```
 ```
-bash -c "cd /path/to/QuickMacro && pkexec ./main.py -s [file_name] -d [delay] playback -rs [replay speed]"
+bash -c "cd /path/to/quick-macro && pkexec ./main.py -s [file_name] -d [delay] playback -rs [replay speed]"
 ```
 > The above commands would require a password each time when run; To avoid this, you can use the format below:
 ```
-bash -c "cd /path/to/QuickMacro && export HISTIGNORE='*sudo -S*' && echo "your_root_password" | sudo -S ./main.py -s [file_name] -d [delay] record [-mr only if you want relative motion]"
+bash -c "cd /path/to/quick-macro && export HISTIGNORE='*sudo -S*' && echo "your_root_password" | sudo -S ./main.py -s [file_name] -d [delay] record [-mr only if you want relative motion]"
 ```
 ```
-bash -c "cd /path/to/QuickMacro && export HISTIGNORE='*sudo -S*' && echo "your_root_password" | sudo -S ./main.py -s [file_name] -d [delay] playback -rs [replay speed]"
+bash -c "cd /path/to/quick-macro && export HISTIGNORE='*sudo -S*' && echo "your_root_password" | sudo -S ./main.py -s [file_name] -d [delay] playback -rs [replay speed]"
 ```
 
 > All These particular commands are for Ubuntu, and may be placed in the custom shortcut option in the settings (under keyboard at the end).
